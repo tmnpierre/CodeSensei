@@ -1,6 +1,7 @@
 ﻿using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using CodeSensei.Bots.Interfaces;
+using CodeSensei.Bots.Enums;
 
 namespace CodeSensei.Bots.Handlers
 {
@@ -10,30 +11,43 @@ namespace CodeSensei.Bots.Handlers
         {
             var messageText = turnContext.Activity.Text.ToLower();
 
+            switch (GetMessageType(messageText))
+            {
+                case MessageType.Categories:
+                    await ShowCategories(turnContext, cancellationToken);
+                    break;
+                case MessageType.CodeEditing:
+                    await SendCodeEditingShortcuts(turnContext, cancellationToken);
+                    break;
+                case MessageType.SolutionNavigation:
+                    await SendSolutionNavigationShortcuts(turnContext, cancellationToken);
+                    break;
+                case MessageType.Debugging:
+                    await SendDebuggingShortcuts(turnContext, cancellationToken);
+                    break;
+                case MessageType.OtherShortcuts:
+                    await SendOtherUsefulShortcuts(turnContext, cancellationToken);
+                    break;
+                default:
+                    await turnContext.SendActivityAsync("Désolé, je ne comprends pas cette demande. Pouvez-vous reformuler votre question ?");
+                    break;
+            }
+        }
+
+        private MessageType GetMessageType(string messageText)
+        {
             if (messageText.Contains("raccourcis") && messageText.Contains("visual studio"))
-            {
-                await ShowCategories(turnContext, cancellationToken);
-            }
-            else if (messageText.Contains("1") || messageText.Contains("navigation et édition du code"))
-            {
-                await SendCodeEditingShortcuts(turnContext, cancellationToken);
-            }
-            else if (messageText.Contains("2") || messageText.Contains("navigation dans la solution"))
-            {
-                await SendSolutionNavigationShortcuts(turnContext, cancellationToken);
-            }
-            else if (messageText.Contains("3") || messageText.Contains("débogage"))
-            {
-                await SendDebuggingShortcuts(turnContext, cancellationToken);
-            }
-            else if (messageText.Contains("4") || messageText.Contains("autres raccourcis utiles"))
-            {
-                await SendOtherUsefulShortcuts(turnContext, cancellationToken);
-            }
-            else
-            {
-                await turnContext.SendActivityAsync("Désolé, je ne comprends pas cette demande. Pouvez-vous reformuler votre question ?");
-            }
+                return MessageType.Categories;
+            if (messageText.Contains("1") || messageText.Contains("navigation et édition du code"))
+                return MessageType.CodeEditing;
+            if (messageText.Contains("2") || messageText.Contains("navigation dans la solution"))
+                return MessageType.SolutionNavigation;
+            if (messageText.Contains("3") || messageText.Contains("débogage"))
+                return MessageType.Debugging;
+            if (messageText.Contains("4") || messageText.Contains("autres raccourcis utiles"))
+                return MessageType.OtherShortcuts;
+
+            return MessageType.Unknown;
         }
 
         private async Task ShowCategories(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
@@ -65,7 +79,6 @@ namespace CodeSensei.Bots.Handlers
             await turnContext.SendActivityAsync(shortcutsMessage, cancellationToken: cancellationToken);
         }
 
-
         private async Task SendSolutionNavigationShortcuts(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
             string shortcutsMessage = "Voici quelques raccourcis clavier utiles pour Navigation dans la Solution et la Solution Explorer dans Visual Studio :\n\n" +
@@ -77,7 +90,6 @@ namespace CodeSensei.Bots.Handlers
 
             await turnContext.SendActivityAsync(shortcutsMessage, cancellationToken: cancellationToken);
         }
-
 
         private async Task SendDebuggingShortcuts(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
@@ -91,7 +103,6 @@ namespace CodeSensei.Bots.Handlers
 
             await turnContext.SendActivityAsync(shortcutsMessage, cancellationToken: cancellationToken);
         }
-
 
         private async Task SendOtherUsefulShortcuts(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
