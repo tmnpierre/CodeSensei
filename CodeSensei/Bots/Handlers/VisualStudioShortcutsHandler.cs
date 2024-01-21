@@ -1,53 +1,39 @@
-﻿using CodeSensei.Services;
-using Microsoft.Bot.Builder;
+﻿using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
+using CodeSensei.Bots.Interfaces;
 
-namespace CodeSensei.Bots
+namespace CodeSensei.Bots.Handlers
 {
-    public class CodeSenseiChatbot : ActivityHandler
+    public class VisualStudioShortcutsHandler : IChatbotHandler
     {
-        private readonly SessionManager _sessionManager = new SessionManager();
-
-        protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
+        public async Task HandleAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-            var userId = turnContext.Activity.From.Id;
-            var sessionContext = _sessionManager.GetOrCreateSession(userId);
             var messageText = turnContext.Activity.Text.ToLower();
 
             if (messageText.Contains("raccourcis") && messageText.Contains("visual studio"))
             {
                 await ShowCategories(turnContext, cancellationToken);
-                sessionContext.CurrentTopic = "raccourcis clavier";
             }
-            else if (sessionContext.CurrentTopic == "raccourcis clavier")
+            else if (messageText.Contains("1") || messageText.Contains("navigation et édition du code"))
             {
-                if (messageText.Contains("1") || messageText.Contains("navigation et édition du code"))
-                {
-                    await SendCodeEditingShortcuts(turnContext, cancellationToken);
-                }
-                else if (messageText.Contains("2") || messageText.Contains("navigation dans la solution"))
-                {
-                    await SendSolutionNavigationShortcuts(turnContext, cancellationToken);
-                }
-                else if (messageText.Contains("3") || messageText.Contains("débogage"))
-                {
-                    await SendDebuggingShortcuts(turnContext, cancellationToken);
-                }
-                else if (messageText.Contains("4") || messageText.Contains("autres raccourcis utiles"))
-                {
-                    await SendOtherUsefulShortcuts(turnContext, cancellationToken);
-                }
-                else
-                {
-                    await turnContext.SendActivityAsync("Désolé, je ne comprends pas cette demande dans le contexte des raccourcis clavier.");
-                }
+                await SendCodeEditingShortcuts(turnContext, cancellationToken);
+            }
+            else if (messageText.Contains("2") || messageText.Contains("navigation dans la solution"))
+            {
+                await SendSolutionNavigationShortcuts(turnContext, cancellationToken);
+            }
+            else if (messageText.Contains("3") || messageText.Contains("débogage"))
+            {
+                await SendDebuggingShortcuts(turnContext, cancellationToken);
+            }
+            else if (messageText.Contains("4") || messageText.Contains("autres raccourcis utiles"))
+            {
+                await SendOtherUsefulShortcuts(turnContext, cancellationToken);
             }
             else
             {
                 await turnContext.SendActivityAsync("Désolé, je ne comprends pas cette demande. Pouvez-vous reformuler votre question ?");
             }
-
-            _sessionManager.UpdateSession(userId, sessionContext);
         }
 
         private async Task ShowCategories(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
@@ -126,6 +112,5 @@ namespace CodeSensei.Bots
 
             await turnContext.SendActivityAsync(shortcutsMessage, cancellationToken: cancellationToken);
         }
-
     }
 }
