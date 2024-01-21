@@ -1,8 +1,9 @@
 ﻿using System.Collections.Concurrent;
+using CodeSensei.Models;
 
-namespace CodeSensei.Bots
+namespace CodeSensei.Services
 {
-    public class SessionManager
+    public class SessionManager : ISessionManager
     {
         private ConcurrentDictionary<string, UserSessionContext> _sessions = new ConcurrentDictionary<string, UserSessionContext>();
 

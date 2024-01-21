@@ -1,4 +1,5 @@
-﻿using Microsoft.Bot.Builder;
+﻿using CodeSensei.Services;
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 
 namespace CodeSensei.Bots

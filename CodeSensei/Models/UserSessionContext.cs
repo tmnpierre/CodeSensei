@@ -1,4 +1,4 @@
-﻿namespace CodeSensei.Bots
+﻿namespace CodeSensei.Models
 {
     public class UserSessionContext
     {
