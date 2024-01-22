@@ -1,6 +1,6 @@
 ﻿using CodeSensei.Models;
 
-namespace CodeSensei.Services
+namespace CodeSensei.Services.Interfaces
 {
     public interface ISessionManager
     {

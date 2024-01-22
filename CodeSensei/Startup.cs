@@ -27,7 +27,7 @@ public class Startup
 
         services.AddTransient<IBot, CodeSensei.Bots.Utilities.CodeSenseiChatbot>();
 
-        services.AddSingleton<FeedbackManager>();
+        services.AddSingleton<IFeedbackManager, FeedbackManager>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
