@@ -1,28 +1,47 @@
 ﻿using System.Threading.Tasks;
+using CodeSensei.Bots.Interfaces;
+using CodeSensei.Data.Contexts;
+using CodeSensei.Data.Models;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
+using System.Threading;
 
-public class FeedbackManager
+namespace CodeSensei.Services
 {
-    public async Task RequestFeedbackAsync(ITurnContext turnContext, CancellationToken cancellationToken)
+    public class FeedbackManager : IFeedbackManager
     {
-        var feedbackMessage = "Avez-vous trouvé cette information utile ? Répondez par 'oui' ou 'non'.";
-        await turnContext.SendActivityAsync(MessageFactory.Text(feedbackMessage), cancellationToken);
-    }
+        private readonly FeedbackContext _context;
 
-    public async Task HandleFeedbackAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
-    {
-        var feedback = turnContext.Activity.Text?.Trim().ToLowerInvariant();
+        public FeedbackManager(FeedbackContext context)
+        {
+            _context = context;
+        }
 
-        // BDD
-        // Pseudo-code: SaveFeedbackToDatabase(turnContext.Activity.From.Id, feedback);
+        public async Task RequestFeedbackAsync(ITurnContext turnContext, CancellationToken cancellationToken)
+        {
+            var feedbackMessage = "Avez-vous trouvé cette information utile ? Répondez par 'oui' ou 'non'.";
+            await turnContext.SendActivityAsync(MessageFactory.Text(feedbackMessage), cancellationToken);
+        }
 
-        var thankYouMessage = "Merci pour votre retour !";
-        await turnContext.SendActivityAsync(MessageFactory.Text(thankYouMessage), cancellationToken);
-    }
+        public async Task HandleFeedbackAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
+        {
+            var feedback = turnContext.Activity.Text?.Trim().ToLowerInvariant();
 
-    private Task SaveFeedbackToDatabase(string userId, string feedback)
-    {
-        return Task.CompletedTask;
+            await SaveFeedbackToDatabase(turnContext.Activity.From.Id, feedback);
+            var thankYouMessage = "Merci pour votre retour !";
+            await turnContext.SendActivityAsync(MessageFactory.Text(thankYouMessage), cancellationToken);
+        }
+
+        private async Task SaveFeedbackToDatabase(string userId, string feedback)
+        {
+            var feedbackRecord = new FeedbackRecord
+            {
+                UserId = userId,
+                UserFeedback = feedback
+            };
+
+            _context.FeedbackRecords.Add(feedbackRecord);
+            await _context.SaveChangesAsync();
+        }
     }
 }
