@@ -2,14 +2,23 @@
 using Microsoft.Bot.Schema;
 using CodeSensei.Bots.Interfaces;
 using CodeSensei.Bots.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace CodeSensei.Bots.Handlers
 {
     public class VisualStudioShortcutsHandler : IChatbotHandler
     {
+        private readonly ILogger<VisualStudioShortcutsHandler> _logger;
+
+        public VisualStudioShortcutsHandler(ILogger<VisualStudioShortcutsHandler> logger)
+        {
+            _logger = logger;
+        }
+
         public async Task HandleAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
             var messageText = turnContext.Activity.Text.ToLower();
+            _logger.LogInformation("Traitement d'un message dans VisualStudioShortcutsHandler: {Message}", messageText);
 
             switch (GetMessageType(messageText))
             {
@@ -29,6 +38,7 @@ namespace CodeSensei.Bots.Handlers
                     await SendOtherUsefulShortcuts(turnContext, cancellationToken);
                     break;
                 default:
+                    _logger.LogWarning("Message non reconnu ou inattendu: {Message}", messageText);
                     await turnContext.SendActivityAsync("Désolé, je ne comprends pas cette demande. Pouvez-vous reformuler votre question ?");
                     break;
             }
