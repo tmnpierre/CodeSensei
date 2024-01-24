@@ -37,10 +37,6 @@ namespace CodeSensei.Bots.Utilities
         {
             var userMessage = turnContext.Activity.Text;
             var witResponse = await GetIntentFromWitAi(userMessage);
-
-            // Traitement de la réponse de Wit.ai pour déterminer l'action à effectuer
-            // Exemple : var intent = ExtractIntent(witResponse);
-            // En fonction de l'intention, vous pouvez appeler différentes méthodes pour gérer les commandes du chatbot.
         }
 
         private async Task<string> GetIntentFromWitAi(string message)
