@@ -1,11 +1,9 @@
 ﻿using CodeSensei.Data.Models;
 using CodeSensei.Data.Contexts;
-using CodeSensei.Data.Repositories.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using CodeSensei.Data.Repositories.Interfaces;
 
-namespace CodeSensei.Data.Repositories.Implementations
+namespace CodeSensei.Data.Implementations
 {
     public class FeedbackRepository : IRepository<FeedbackRecord>
     {
