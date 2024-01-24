@@ -4,6 +4,7 @@ using CodeSensei.Bots.Interfaces;
 using CodeSensei.Services;
 using CodeSensei.Data.Repositories.Interfaces;
 using CodeSensei.Data.Models;
+using System.Web;
 
 namespace CodeSensei.Bots.Utilities
 {
@@ -25,30 +26,43 @@ namespace CodeSensei.Bots.Utilities
             _feedbackRepository = feedbackRepository;
         }
 
+        private readonly HttpClient _httpClient;
+
+        public CodeSenseiChatbot(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-            var messageText = turnContext.Activity.Text.ToLower();
+            var userMessage = turnContext.Activity.Text;
+            var witResponse = await GetIntentFromWitAi(userMessage);
 
-            if (messageText.Contains("affichertous"))
-            {
-                var feedbacks = await _feedbackRepository.GetAllAsync();
-                string response = "Voici tous les feedbacks:\n";
-                foreach (var feedback in feedbacks)
-                {
-                    response += $"- {feedback.UserFeedback} (from {feedback.UserId} at {feedback.Timestamp})\n";
-                }
-                await turnContext.SendActivityAsync(MessageFactory.Text(response), cancellationToken);
-            }
-            else if (messageText.Contains("visual studio"))
-            {
-                await _visualStudioShortcutsHandler.HandleAsync(turnContext, cancellationToken);
-            }
-            else
-            {
-                await turnContext.SendActivityAsync("Je ne suis pas sûr de comprendre. Pouvez-vous reformuler ?", cancellationToken: cancellationToken);
-            }
+            // Traitement de la réponse de Wit.ai pour déterminer l'action à effectuer
+            // Exemple : var intent = ExtractIntent(witResponse);
+            // En fonction de l'intention, vous pouvez appeler différentes méthodes pour gérer les commandes du chatbot.
+        }
 
-            await _feedbackManager.RequestFeedbackAsync(turnContext, cancellationToken);
+        private async Task<string> GetIntentFromWitAi(string message)
+        {
+            var queryString = HttpUtility.ParseQueryString(string.Empty);
+            queryString["q"] = message;
+            queryString["v"] = "2021-05-13";
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri($"https://api.wit.ai/message?{queryString}"),
+                Headers = {
+                    { "Authorization", "Bearer TOKEN_WIT.AI" },
+                },
+            };
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var body = await response.Content.ReadAsStringAsync();
+
+            return body;
         }
 
 
