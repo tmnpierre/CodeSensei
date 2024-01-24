@@ -1,11 +1,10 @@
 ﻿using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
-using CodeSensei.Bots.Handlers;
 using CodeSensei.Bots.Interfaces;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using System.Threading;
 using CodeSensei.Services;
+using CodeSensei.Data.Repositories.Interfaces;
+using CodeSensei.Data.Models;
+using System.Web;
 
 namespace CodeSensei.Bots.Utilities
 {
@@ -14,37 +13,58 @@ namespace CodeSensei.Bots.Utilities
         private readonly IChatbotHandler _visualStudioShortcutsHandler;
         private readonly ILogger<CodeSenseiChatbot> _logger;
         private readonly FeedbackManager _feedbackManager;
+        private readonly IRepository<FeedbackRecord> _feedbackRepository;
 
-        public CodeSenseiChatbot(
-            IChatbotHandler visualStudioShortcutsHandler,
-            ILogger<CodeSenseiChatbot> logger,
-            FeedbackManager feedbackManager)
+        public CodeSenseiChatbot(IChatbotHandler visualStudioShortcutsHandler,
+                                 ILogger<CodeSenseiChatbot> logger,
+                                 FeedbackManager feedbackManager,
+                                 IRepository<FeedbackRecord> feedbackRepository)
         {
             _visualStudioShortcutsHandler = visualStudioShortcutsHandler;
             _logger = logger;
             _feedbackManager = feedbackManager;
+            _feedbackRepository = feedbackRepository;
+        }
+
+        private readonly HttpClient _httpClient;
+
+        public CodeSenseiChatbot(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
         }
 
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-            var messageText = turnContext.Activity.Text.ToLower();
-            _logger.LogInformation("Message reçu: {Message}", messageText);
-
-            if (messageText.Contains("visual studio"))
-            {
-                _logger.LogInformation("Délégation à VisualStudioShortcutsHandler");
-                await _visualStudioShortcutsHandler.HandleAsync(turnContext, cancellationToken);
-            }
-            else
-            {
-                _logger.LogWarning("Message non reconnu: {Message}", messageText);
-                await turnContext.SendActivityAsync("Je ne suis pas sûr de comprendre. Pouvez-vous reformuler ?");
-            }
-
-            await _feedbackManager.RequestFeedbackAsync(turnContext, cancellationToken);
+            var userMessage = turnContext.Activity.Text;
+            var witResponse = await GetIntentFromWitAi(userMessage);
         }
 
-        protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
+        private async Task<string> GetIntentFromWitAi(string message)
+        {
+            var queryString = HttpUtility.ParseQueryString(string.Empty);
+            queryString["q"] = message;
+            queryString["v"] = "2021-05-13";
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri($"https://api.wit.ai/message?{queryString}"),
+                Headers = {
+                    { "Authorization", "Bearer TOKEN_WIT.AI" },
+                },
+            };
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var body = await response.Content.ReadAsStringAsync();
+
+            return body;
+        }
+
+
+        protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded,
+                                                          ITurnContext<IConversationUpdateActivity> turnContext,
+                                                          CancellationToken cancellationToken)
         {
             foreach (var member in membersAdded)
             {
