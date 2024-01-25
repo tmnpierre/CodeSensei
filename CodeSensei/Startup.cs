@@ -28,7 +28,7 @@ public class Startup
     {
         services.AddControllers().AddNewtonsoftJson();
         services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
-        services.AddSingleton<IFeedbackManager, FeedbackManager>();
+        services.AddSingleton<IFeedbackService, FeedbackService>();
         services.AddTransient<IBot, CodeSensei.Bots.Utilities.CodeSenseiChatbot>();
         services.AddScoped<IRepository<FeedbackRecord>, FeedbackRepository>();
         services.AddDbContext<FeedbackContext>(options =>

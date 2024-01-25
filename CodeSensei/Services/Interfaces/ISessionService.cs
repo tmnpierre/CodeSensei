@@ -2,7 +2,7 @@
 
 namespace CodeSensei.Services.Interfaces
 {
-    public interface ISessionManager
+    public interface ISessionService
     {
         UserSessionContext GetOrCreateSession(string userId);
         void UpdateSession(string userId, UserSessionContext context);

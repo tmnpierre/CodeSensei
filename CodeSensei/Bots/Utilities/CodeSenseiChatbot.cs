@@ -12,12 +12,12 @@ namespace CodeSensei.Bots.Utilities
     {
         private readonly IChatbotHandler _visualStudioShortcutsHandler;
         private readonly ILogger<CodeSenseiChatbot> _logger;
-        private readonly FeedbackManager _feedbackManager;
+        private readonly FeedbackService _feedbackManager;
         private readonly IRepository<FeedbackRecord> _feedbackRepository;
 
         public CodeSenseiChatbot(IChatbotHandler visualStudioShortcutsHandler,
                                  ILogger<CodeSenseiChatbot> logger,
-                                 FeedbackManager feedbackManager,
+                                 FeedbackService feedbackManager,
                                  IRepository<FeedbackRecord> feedbackRepository)
         {
             _visualStudioShortcutsHandler = visualStudioShortcutsHandler;

@@ -8,11 +8,11 @@ using System.Threading;
 
 namespace CodeSensei.Services
 {
-    public class FeedbackManager : IFeedbackManager
+    public class FeedbackService : IFeedbackService
     {
         private readonly FeedbackContext _context;
 
-        public FeedbackManager(FeedbackContext context)
+        public FeedbackService(FeedbackContext context)
         {
             _context = context;
         }

@@ -4,7 +4,7 @@ using CodeSensei.Services.Interfaces;
 
 namespace CodeSensei.Services
 {
-    public class SessionManager : ISessionManager
+    public class SessionService : ISessionService
     {
         private ConcurrentDictionary<string, UserSessionContext> _sessions = new ConcurrentDictionary<string, UserSessionContext>();
 
